@@ -16,7 +16,8 @@ define go_carbon::instance(
   $whisper_aggregation_file        = $go_carbon::params::whisper_aggregation_file,
   $whisper_workers                 = $go_carbon::params::whisper_workers,
   $whisper_max_updates_per_second  = $go_carbon::params::whisper_max_updates_per_second,
-  $whisper_sparse_create	   = $go_carbon::params::whisper_sparse_create,
+  $whisper_max_creates_per_second  = $go_carbon::params::whisper_max_creates_per_second,
+  $whisper_sparse_create           = $go_carbon::params::whisper_sparse_create,
   $whisper_enabled                 = $go_carbon::params::whisper_enabled,
   $cache_max_size                  = $go_carbon::params::cache_max_size,
   $cache_input_buffer              = $go_carbon::params::cache_input_buffer,
@@ -29,6 +30,8 @@ define go_carbon::instance(
   $pickle_listen                   = $go_carbon::params::pickle_listen,
   $pickle_max_message_size         = $go_carbon::params::pickle_max_message_size,
   $pickle_enabled                  = $go_carbon::params::pickle_enabled,
+  $grpc_listen                     = $go_carbon::params::grpc_listen,
+  $grpc_enabled                    = $go_carbon::params::grpc_enabled,
   $carbonlink_listen               = $go_carbon::params::carbonlink_listen,
   $carbonlink_enabled              = $go_carbon::params::carbonlink_enabled,
   $carbonlink_read_timeout         = $go_carbon::params::carbonlink_read_timeout,
@@ -64,6 +67,7 @@ define go_carbon::instance(
   validate_absolute_path($whisper_data_dir)
   validate_integer($whisper_workers)
   validate_integer($whisper_max_updates_per_second)
+  validate_integer($whisper_max_creates_per_second)
   validate_bool($whisper_sparse_create)
   validate_bool($whisper_enabled)
   validate_integer($cache_max_size)
@@ -76,25 +80,25 @@ define go_carbon::instance(
 
   validate_bool($udp_log_incomplete)
   validate_bool($udp_enabled)
-  
+
   validate_re($tcp_listen, '((?:[0-9]{1,3}\.){3}[0-9]{1,3})?:\d+',
     "Invalid tcp listen ${tcp_listen}. Must be {ip}:{port} or just :{port}")
 
   validate_bool($tcp_enabled)
-  
+
   validate_re($pickle_listen, '((?:[0-9]{1,3}\.){3}[0-9]{1,3})?:\d+',
     "Invalid pickle listen ${pickle_listen}. Must be {ip}:{port} or just :{port}")
 
   validate_integer($pickle_max_message_size)
   validate_bool($pickle_enabled)
-  
+
   validate_re($carbonlink_listen, '((?:[0-9]{1,3}\.){3}[0-9]{1,3})?:\d+',
     "Invalid carbonlink listen ${carbonlink_listen}. Must be {ip}:{port} or just :{port}")
 
   validate_bool($carbonlink_enabled)
   validate_string($carbonlink_read_timeout)
   validate_string($carbonlink_query_timeout)
-  
+
   validate_re($pprof_listen, '((?:[0-9]{1,3}\.){3}[0-9]{1,3})?:\d+',
     "Invalid pprof listen ${pprof_listen}. Must be {ip}:{port} or just :{port}")
 
@@ -122,12 +126,32 @@ define go_carbon::instance(
   $config_dir = $go_carbon::config_dir
   $user       = $go_carbon::user
 
+  if $dump_enabled and $dump_path {
+    file {
+      $dump_path:
+      ensure => directory,
+      owner  => $user,
+      group  => $user
+    }
+  }
+
   file {
     "${go_carbon::config_dir}/${service_name}.conf":
       ensure  => $ensure,
       content => template("${module_name}/go-carbon.conf.erb")
   }
 
-  Class[$module_name] ->
-  File["${go_carbon::config_dir}/${service_name}.conf"]
+  Class[$module_name]
+  -> File["${go_carbon::config_dir}/${service_name}.conf"]
+
+  include ::systemd
+  file { "/etc/systemd/system/${service_name}.service":
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    content => template('go_carbon/systemd.go-carbon.conf.erb'),
+  }
+  ~> Exec['systemctl-daemon-reload']
+
 }

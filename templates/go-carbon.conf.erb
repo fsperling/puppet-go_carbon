@@ -11,6 +11,8 @@ log-level = "<%= @log_level %>"
 graph-prefix = "<%= @internal_graph_prefix %>"
 # Interval of storing internal metrics. Like CARBON_METRIC_INTERVAL
 metric-interval = "<%= @internal_metrics_interval %>"
+# Endpoint for store internal carbon metrics. Valid values: "" or "local", "tcp://host:port", "udp://host:port"
+metric-endpoint = "<%= @internal_metrics_endpoint %>"
 # Increase for configuration with multi persisters
 max-cpu = <%= @max_cpu %>
 
@@ -24,6 +26,8 @@ aggregation-file = "<%= @whisper_aggregation_file %>"
 workers = <%= @whisper_workers %>
 # Limits the number of whisper update_many() calls per second. 0 - no limit
 max-updates-per-second = <%= @whisper_max_updates_per_second %>
+# Softly limits the number of whisper files that get created each second. 0 - no limit
+max-creates-per-second = <%= @whisper_max_creates_per_second %>
 sparse-create = <%= @whisper_sparse_create %>
 enabled = <%= @whisper_enabled %>
 
@@ -39,6 +43,14 @@ input-buffer = <%= @cache_input_buffer %>
 #   "noop" - pick metrics to write in unspecified order,
 #            requires least CPU and improves cache responsiveness
 write-strategy = "<%= @cache_write_strategy %>"
+
+# grpc api
+# protocol: https://github.com/lomik/go-carbon/blob/master/helper/carbonpb/carbon.proto
+# samples: https://github.com/lomik/go-carbon/tree/master/api/sample
+[grpc]
+listen = "<%= @grpc_listen %>"
+enabled = <%= @grpc_enabled %>
+
 
 [udp]
 listen = "<%= @udp_listen %>"

@@ -16,7 +16,7 @@ class go_carbon(
 ) inherits go_carbon::params {
 
   validate_re($::osfamily, '^(RedHat|Debian)', 'This module is only supported on RHEL/CentOS 6/7 or Ubuntu 16.04')
-  validate_re($::operatingsystemmajrelease, '^[67]|16.04$', 'This module is only supported on RHEL/CentOS 6/7 or Ubuntu 16.04')
+  validate_re($::operatingsystemmajrelease, '^[678]|16.04$', 'This module is only supported on RHEL/CentOS 6/7 or Ubuntu 16.04')
 
   validate_string($package_name)
   validate_string($version)

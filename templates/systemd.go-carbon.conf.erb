@@ -6,6 +6,7 @@ After=basic.target network.target
 [Service]
 Environment="GOMAXPROCS=<%= @go_maxprocs %>"
 ExecStart=<%= @executable %> --config <%= @config_dir %>/<%= @service_name %>.conf
+ExecStop=/bin/kill -USR2 $MAINPID
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=process
 Restart=on-failure

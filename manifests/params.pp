@@ -54,6 +54,7 @@ class go_carbon::params {
   $whisper_workers                    = 1
   # Limits the number of whisper update_many() calls per second. 0 - no limit
   $whisper_max_updates_per_second     = 0
+  $whisper_max_creates_per_second     = 0
   $whisper_sparse_create              = false
   $whisper_enabled                    = true
 
@@ -76,6 +77,8 @@ class go_carbon::params {
   $pickle_max_message_size            = 67108864
   $pickle_enabled                     = true
 
+  $grpc_listen                        = 7003
+  $grpc_enabled                       = true
 
   $carbonlink_listen                  = '127.0.0.1:7002'
   $carbonlink_enabled                 = true
